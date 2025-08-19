@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Points - Kumpulkan Poin & Menangkan Hadiah</title>
+    <style>
+        /* Reset dan Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 80px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .nav-logo h2 {
+            color: #667eea;
+            font-size: 1.5em;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #667eea;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        /* Dashboard */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            text-align: center;
+        }
+
+        .points-display {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .points-display h2 {
+            font-size: 2em;
+            margin: 0;
+        }
+
+        /* Game Section */
+        .game-container {
+            text-align: center;
+            color: white;
+        }
+
+        .game-container h2 {
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-selection {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .game-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .game-btn:hover,
+        .game-btn.active {
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            color: #333;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .game-stats p {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .game-action-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px;
+            min-width: 200px;
+        }
+
+        .game-action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .game-action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .game-action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Guess Game */
+        .guess-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .guess-input input {
+            width: 150px;
+            flex: none;
+        }
+
+        #guess-hint {
+            font-style: italic;
+            color: #666;
+            min-height: 20px;
+        }
+
+        /* Memory Game */
+        .memory-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 200px;
+            margin: 20px auto;
+        }
+
+        .memory-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+
+        .memory-btn[data-color="red"] { background: #ff4757; }
+        .memory-btn[data-color="blue"] { background: #3742fa; }
+        .memory-btn[data-color="green"] { background: #2ed573; }
+        .memory-btn[data-color="yellow"] { background: #ffa502; }
+
+        .memory-btn:hover,
+        .memory-btn.active {
+            opacity: 1;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Withdraw Section */
+        .withdraw-container {
+            color: white;
+        }
+
+        .withdraw-info {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .withdraw-info p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        #withdraw-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .withdraw-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .withdraw-item-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .withdraw-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .withdraw-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .withdraw-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .withdraw-status.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Leaderboard */
+        .leaderboard-container {
+            color: white;
+        }
+
+        .leaderboard-list {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .leaderboard-rank {
+            font-size: 24px;
+            font-weight: bold;
+            min-width: 40px;
+        }
+
+        .leaderboard-rank.rank-1 { color: #ffd700; }
+        .leaderboard-rank.rank-2 { color: #c0c0c0; }
+        .leaderboard-rank.rank-3 { color: #cd7f32; }
+
+        .leaderboard-info {
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .leaderboard-email {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .leaderboard-id {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .leaderboard-points {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        /* About Section */
+        .about-container {
+            color: white;
+        }
+
+        .about-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .about-container h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+
+        .about-container ol,
+        .about-container ul {
+            padding-left: 25px;
+        }
+
+        .about-container li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 60px;
+                flex-direction: column;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+                padding: 20px 0;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-menu a {
+                padding: 10px;
+                display: block;
+                border-bottom: 1px solid #eee;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger.active span:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+
+            .hamburger.active span:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+
+            .container {
+                padding: 10px;
+                padding-top: 80px;
+            }
+
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .game-selection {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .game-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .game-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .game-action-btn {
+                width: 100%;
+                max-width: 300px;
+                padding: 15px 20px;
+                font-size: 20px;
+            }
+
+            .guess-input {
+                flex-direction: column;
+            }
+
+            .guess-input input {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .memory-board {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 180px;
+            }
+
+            .memory-btn {
+                width: 70px;
+                height: 70px;
+            }
+
+            .leaderboard-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .withdraw-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 15px;
+                margin: 10px 0;
+            }
+
+            .hero h1 {
+                font-size: 1.8em;
+            }
+
+            .hero p {
+                font-size: 1em;
+            }
+
+            .points-display h2 {
+                font-size: 1.5em;
+            }
+
+            .game-action-btn {
+                font-size: 18px;
+                padding: 12px 15px;
+            }
+
+            .memory-btn {
+                width: 60px;
+                height: 60px;
+            }
+
+            .toast {
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100%);
+            }
+
+            .toast.show {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>🎮 GamePoints</h2>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#" class="nav-link" data-section="home">Home</a>
+                <a href="#" class="nav-link" data-section="game">Game</a>
+                <a href="#" class="nav-link" data-section="withdraw">Withdraw</a>
+                <a href="#" class="nav-link" data-section="leaderboard">Leaderboard</a>
+                <a href="#" class="nav-link" data-section="about">About</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Home Section -->
+        <section id="home-section" class="section active">
+            <div class="hero">
+                <h1>🎯 Selamat Datang di GamePoints!</h1>
+                <p>Mainkan game sederhana dan kumpulkan poin untuk hadiah menarik</p>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="card">
+                <h3>🔐 Login untuk Mulai Bermain</h3>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required placeholder="Masukkan email Anda">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Masuk</button>
+                </form>
+            </div>
+
+            <!-- User Dashboard -->
+            <div id="user-dashboard" class="card hidden">
+                <div class="dashboard-header">
+                    <h3>Dashboard</h3>
+                    <button id="logout-btn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+                <div class="user-info">
+                    <p><strong>Email:</strong> <span id="user-email"></span></p>
+                    <p><strong>User ID:</strong> <span id="user-id"></span></p>
+                    <div class="points-display">
+                        <h2>💰 <span id="user-points">0</span> Poin</h2>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Section -->
+        <section id="game-section" class="section">
+            <div class="game-container">
+                <h2>🎮 Game Arena</h2>
+                
+                <!-- Game Selection -->
+                <div class="game-selection">
+                    <button class="game-btn" data-game="click">🖱️ Speed Click</button>
+                    <button class="game-btn" data-game="guess">🔢 Guess Number</button>
+                    <button class="game-btn" data-game="memory">🧠 Memory Game</button>
+                </div>
+
+                <!-- Speed Click Game -->
+                <div id="click-game" class="game-area hidden">
+                    <h3>Speed Click Challenge</h3>
+                    <p>Klik tombol sebanyak mungkin dalam 10 detik!</p>
+                    <div class="game-stats">
+                        <p>Waktu: <span id="click-timer">10</span>s</p>
+                        <p>Klik: <span id="click-count">0</span></p>
+                    </div>
+                    <button id="click-button" class="game-action-btn">Klik Saya!</button>
+                    <button id="start-click-game" class="btn btn-primary">Mulai Game</button>
+                </div>
+
+                <!-- Guess Number Game -->
+                <div id="guess-game" class="game-area hidden">
+                    <h3>Tebak Angka</h3>
+                    <p>Tebak angka antara 1-100. Kamu punya 7 kesempatan!</p>
+                    <div class="game-stats">
+                        <p>Kesempatan: <span id="guess-attempts">7</span></p>
+                        <p id="guess-hint"></p>
+                    </div>
+                    <div class="guess-input">
+                        <input type="number" id="guess-number" min="1" max="100" placeholder="Masukkan tebakan">
+                        <button id="submit-guess" class="btn btn-primary">Tebak!</button>
+                    </div>
+                    <button id="start-guess-game" class="btn btn-primary">Game Baru</button>
+                </div>
+
+                <!-- Memory Game -->
+                <div id="memory-game" class="game-area hidden">
+                    <h3>Memory Game</h3>
+                    <p>Ingat urutan warna yang muncul!</p>
+                    <div class="game-stats">
+                        <p>Level: <span id="memory-level">1</span></p>
+                        <p>Score: <span id="memory-score">0</span></p>
+                    </div>
+                    <div id="memory-board" class="memory-board">
+                        <div class="memory-btn" data-color="red"></div>
+                        <div class="memory-btn" data-color="blue"></div>
+                        <div class="memory-btn" data-color="green"></div>
+                        <div class="memory-btn" data-color="yellow"></div>
+                    </div>
+                    <button id="start-memory-game" class="btn btn-primary">Mulai Game</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Withdraw Section -->
+        <section id="withdraw-section" class="section">
+            <div class="withdraw-container">
+                <h2>💳 Withdraw Poin</h2>
+                <div class="card">
+                    <div class="withdraw-info">
+                        <p><strong>Saldo Anda:</strong> <span id="withdraw-points">0</span> Poin</p>
+                        <p><strong>Minimum withdraw:</strong> 1000 poin</p>
+                        <p><strong>Rate:</strong> 1000 poin = Rp 10.000</p>
+                    </div>
+                    
+                    <form id="withdraw-form">
+                        <div class="form-group">
+                            <label for="withdraw-amount">Jumlah Poin:</label>
+                            <input type="number" id="withdraw-amount" min="1000" step="100" placeholder="Minimal 1000 poin">
+                        </div>
+                        <div class="form-group">
+                            <label for="withdraw-method">Metode Penarikan:</label>
+                            <select id="withdraw-method" required>
+                                <option value="">Pilih metode</option>
+                                <option value="dana">DANA</option>
+                                <option value="ovo">OVO</option>
+                                <option value="gopay">GoPay</option>
+                                <option value="bank">Transfer Bank</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="withdraw-account">Nomor Rekening/HP:</label>
+                            <input type="text" id="withdraw-account" required placeholder="Nomor rekening atau HP">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Request Withdraw</button>
+                    </form>
+                </div>
+
+                <!-- Withdraw History -->
+                <div class="card">
+                    <h3>History Withdraw</h3>
+                    <div id="withdraw-history">
+                        <p>Belum ada request withdraw</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leaderboard Section -->
+        <section id="leaderboard-section" class="section">
+            <div class="leaderboard-container">
+                <h2>🏆 Leaderboard</h2>
+                <div class="card">
+                    <div id="leaderboard-list" class="leaderboard-list">
+                        <div class="loading">Loading leaderboard...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about-section" class="section">
+            <div class="about-container">
+                <h2>ℹ️ Tentang GamePoints</h2>
+                <div class="card">
+                    <h3>Cara Bermain:</h3>
+                    <ol>
+                        <li>Login dengan email Anda</li>
+                        <li>Pilih dan mainkan game yang tersedia</li>
+                        <li>Kumpulkan poin dari setiap game</li>
+                        <li>Tukar poin dengan hadiah melalui withdraw</li>
+                    </ol>
+
+                    <h3>Sistem Poin:</h3>
+                    <ul>
+                        <li><strong>Speed Click:</strong> 1 poin per 10 klik</li>
+                        <li><strong>Guess Number:</strong> 50 poin jika berhasil</li>
+                        <li><strong>Memory Game:</strong> 20 poin per level</li>
+                    </ul>
+
+                    <h3>Withdraw:</h3>
+                    <ul>
+                        <li>Minimum withdraw: 1000 poin</li>
+                        <li>Rate: 1000 poin = Rp 10.000</li>
+                        <li>Proses: 1-3 hari kerja</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        // Configuration - Ganti dengan URL Google Apps Script Anda
+        const CONFIG = {
+            APPS_SCRIPT_URL: 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE', // Ganti dengan URL Apps Script Anda
+            DEMO_MODE: true // Set ke false jika sudah setup Google Sheets
+        };
+
+        // Global Variables
+        let currentUser = null;
+        let currentGame = null;
+        let gameStates = {
+            click: {
+                timer: null,
+                timeLeft: 10,
+                clicks: 0,
+                gameActive: false
+            },
+            guess: {
+                targetNumber: 0,
+                attemptsLeft: 7,
+                gameActive: false
+            },
+            memory: {
+                sequence: [],
+                playerSequence: [],
+                level: 1,
+                score: 0,
+                gameActive: false,
+                showingSequence: false
+            }
+        };
+
+        // Utility Functions
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function generateUserId() {
+            return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // API Functions (Mock untuk demo, ganti dengan Google Apps Script)
+        async function apiCall(action, data = {}) {
+            if (CONFIG.DEMO_MODE) {
+                return mockApiResponse(action, data);
+            }
+            
+            try {
+                const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action, ...data })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Mock API responses for demo
+        function mockApiResponse(action, data) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    switch (action) {
+                        case 'login':
+                            const existingUser = localStorage.getItem(`user_${data.email}`);
+                            if (existingUser) {
+                                resolve(JSON.parse(existingUser));
+                            } else {
+                                const newUser = {
+                                    success: true,
+                                    email: data.email,
+                                    userId: generateUserId(),
+                                    points: 0,
+                                    isNew: true
+                                };
+                                localStorage.setItem(`user_${data.email}`, JSON.stringify(newUser));
+                                resolve(newUser);
+                            }
+                            break;
+                            
+                        case 'updatePoints':
+                            const user = JSON.parse(localStorage.getItem(`user_${data.email}`));
+                            user.points = data.points;
+                            localStorage.setItem(`user_${data.email}`, JSON.stringify(user));
+                            resolve({ success: true, points: data.points });
+                            break;
+                            
+                        case 'withdraw':
+                            const withdrawUser = JSON.parse(localStorage.getItem(`user_${data.email}`));
+                            const withdrawHistory = JSON.parse(localStorage.getItem('withdrawHistory') || '[]');
+                            const withdrawRequest = {
+                                id: 'wd_' + Date.now(),
+                                email: data.email,
+                                userId: data.userId,
+                                amount: data.amount,
+                                method: data.method,
+                                account: data.account,
+                                status: 'pending',
+                                date: new Date().toISOString()
+                            };
+                            withdrawHistory.push(withdrawRequest);
+                            localStorage.setItem('withdrawHistory', JSON.stringify(withdrawHistory));
+                            
+                            withdrawUser.points -= data.amount;
+                            localStorage.setItem(`user_${data.email}`, JSON.stringify(withdrawUser));
+                            resolve({ success: true, message: 'Withdraw request submitted' });
+                            break;
+                            
+                        case 'getWithdrawHistory':
+                            const history = JSON.parse(localStorage.getItem('withdrawHistory') || '[]');
+                            const userHistory = history.filter(w => w.email === data.email);
+                            resolve({ success: true, history: userHistory });
+                            break;
+                            
+                        case 'getLeaderboard':
+                            const leaderboard = [];
+                            for (let i = 0; i < localStorage.length; i++) {
+                                const key = localStorage.key(i);
+                                if (key.startsWith('user_')) {
+                                    const userData = JSON.parse(localStorage.getItem(key));
+                                    if (userData.email) {
+                                        leaderboard.push({
+                                            email: userData.email,
+                                            userId: userData.userId,
+                                            points: userData.points
+                                        });
+                                    }
+                                }
+                            }
+                            leaderboard.sort((a, b) => b.points - a.points);
+                            resolve({ success: true, leaderboard: leaderboard.slice(0, 5) });
+                            break;
+                            
+                        default:
+                            resolve({ success: false, message: 'Unknown action' });
+                    }
+                }, 500); // Simulate network delay
+            });
+        }
+
+        // Authentication
+        async function login(email) {
+            try {
+                showLoading();
+                const response = await apiCall('login', { email });
+                
+                if (response.success) {
+                    currentUser = {
+                        email: response.email,
+                        userId: response.userId,
+                        points: response.points
+                    };
+                    
+                    updateUserDisplay();
+                    showUserDashboard();
+                    
+                    if (response.isNew) {
+                        showToast('Akun baru berhasil dibuat! Selamat bermain!');
+                    } else {
+                        showToast('Login berhasil! Selamat datang kembali!');
+                    }
+                } else {
+                    showToast('Login gagal. Silakan coba lagi.', 'error');
+                }
+            } catch (error) {
+                showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
+                console.error('Login error:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            showLoginForm();
+            showToast('Logout berhasil!');
+            navigateToSection('home');
+        }
+
+        function showLoginForm() {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('user-dashboard').classList.add('hidden');
+        }
+
+        function showUserDashboard() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('user-dashboard').classList.remove('hidden');
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                document.getElementById('user-email').textContent = currentUser.email;
+                document.getElementById('user-id').textContent = currentUser.userId;
+                document.getElementById('user-points').textContent = currentUser.points;
+                document.getElementById('withdraw-points').textContent = currentUser.points;
+            }
+        }
+
+        // Navigation
+        function navigateToSection(sectionName) {
+            // Update navigation active state
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === sectionName) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Show selected section
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${sectionName}-section`).classList.add('active');
+
+            // Close mobile menu
+            document.getElementById('nav-menu').classList.remove('active');
+            document.getElementById('hamburger').classList.remove('active');
+
+            // Load section specific data
+            if (sectionName === 'leaderboard') {
+                loadLeaderboard();
+            } else if (sectionName === 'withdraw') {
+                loadWithdrawHistory();
+            }
+        }
+
+        // Points Management
+        async function updateUserPoints(pointsToAdd) {
+            if (!currentUser) return;
+
+            try {
+                const newPoints = currentUser.points + pointsToAdd;
+                const response = await apiCall('updatePoints', {
+                    email: currentUser.email,
+                    points: newPoints
+                });
+
+                if (response.success) {
+                    currentUser.points = newPoints;
+                    updateUserDisplay();
+                    showToast(`+${pointsToAdd} poin! Total: ${newPoints}`);
+                }
+            } catch (error) {
+                console.error('Update points error:', error);
+                showToast('Gagal mengupdate poin', 'error');
+            }
+        }
+
+        // Game Functions
+        function selectGame(gameType) {
+            currentGame = gameType;
+            
+            // Update game button states
+            document.querySelectorAll('.game-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.game === gameType) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Show selected game
+            document.querySelectorAll('.game-area').forEach(area => {
+                area.classList.add('hidden');
+            });
+            document.getElementById(`${gameType}-game`).classList.remove('hidden');
+
+            // Reset game state
+            resetGame(gameType);
+        }
+
+        function resetGame(gameType) {
+            switch (gameType) {
+                case 'click':
+                    gameStates.click = { timer: null, timeLeft: 10, clicks: 0, gameActive: false };
+                    updateClickDisplay();
+                    document.getElementById('click-button').disabled = true;
+                    break;
+                    
+                case 'guess':
+                    gameStates.guess = { targetNumber: 0, attemptsLeft: 7, gameActive: false };
+                    updateGuessDisplay();
+                    document.getElementById('guess-number').value = '';
+                    document.getElementById('guess-number').disabled = false;
+                    document.getElementById('submit-guess').disabled = false;
+                    break;
+                    
+                case 'memory':
+                    gameStates.memory = { 
+                        sequence: [], 
+                        playerSequence: [], 
+                        level: 1, 
+                        score: 0, 
+                        gameActive: false,
+                        showingSequence: false
+                    };
+                    updateMemoryDisplay();
+                    document.querySelectorAll('.memory-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.style.pointerEvents = 'none';
+                    });
+                    break;
+            }
+        }
+
+        // Speed Click Game
+        function startClickGame() {
+            if (!currentUser) {
+                showToast('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const gameState = gameStates.click;
+            gameState.gameActive = true;
+            gameState.clicks = 0;
+            gameState.timeLeft = 10;
+            
+            document.getElementById('click-button').disabled = false;
+            document.getElementById('start-click-game').textContent = 'Game Berlangsung...';
+            document.getElementById('start-click-game').disabled = true;
+            
+            updateClickDisplay();
+            
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                updateClickDisplay();
+                
+                if (gameState.timeLeft <= 0) {
+                    endClickGame();
+                }
+            }, 1000);
+        }
+
+        function handleClick() {
+            if (gameStates.click.gameActive) {
+                gameStates.click.clicks++;
+                updateClickDisplay();
+            }
+        }
+
+        function endClickGame() {
+            const gameState = gameStates.click;
+            clearInterval(gameState.timer);
+            gameState.gameActive = false;
+            
+            document.getElementById('click-button').disabled = true;
+            document.getElementById('start-click-game').textContent = 'Mulai Game';
+            document.getElementById('start-click-game').disabled = false;
+            
+            // Calculate points (1 point per 10 clicks)
+            const points = Math.floor(gameState.clicks / 10);
+            if (points > 0) {
+                updateUserPoints(points);
+            } else {
+                showToast('Klik lebih cepat untuk mendapat poin!', 'error');
+            }
+        }
+
+        function updateClickDisplay() {
+            document.getElementById('click-timer').textContent = gameStates.click.timeLeft;
+            document.getElementById('click-count').textContent = gameStates.click.clicks;
+        }
+
+        // Guess Number Game
+        function startGuessGame() {
+            if (!currentUser) {
+                showToast('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const gameState = gameStates.guess;
+            gameState.gameActive = true;
+            gameState.attemptsLeft = 7;
+            gameState.targetNumber = Math.floor(Math.random() * 100) + 1;
+            
+            document.getElementById('guess-number').disabled = false;
+            document.getElementById('submit-guess').disabled = false;
+            document.getElementById('guess-hint').textContent = 'Tebak angka 1-100!';
+            document.getElementById('start-guess-game').textContent = 'Game Baru';
+            
+            updateGuessDisplay();
+        }
+
+        function submitGuess() {
+            const gameState = gameStates.guess;
+            const guess = parseInt(document.getElementById('guess-number').value);
+            
+            if (!guess || guess < 1 || guess > 100) {
+                showToast('Masukkan angka antara 1-100', 'error');
+                return;
+            }
+            
+            gameState.attemptsLeft--;
+            
+            if (guess === gameState.targetNumber) {
+                document.getElementById('guess-hint').textContent = `🎉 Benar! Angkanya adalah ${gameState.targetNumber}`;
+                updateUserPoints(50);
+                endGuessGame();
+            } else if (gameState.attemptsLeft === 0) {
+                document.getElementById('guess-hint').textContent = `😞 Game Over! Angkanya adalah ${gameState.targetNumber}`;
+                endGuessGame();
+            } else {
+                const hint = guess < gameState.targetNumber ? 'Terlalu kecil!' : 'Terlalu besar!';
+                document.getElementById('guess-hint').textContent = hint;
+            }
+            
+            updateGuessDisplay();
+            document.getElementById('guess-number').value = '';
+        }
+
+        function endGuessGame() {
+            const gameState = gameStates.guess;
+            gameState.gameActive = false;
+            document.getElementById('guess-number').disabled = true;
+            document.getElementById('submit-guess').disabled = true;
+        }
+
+        function updateGuessDisplay() {
+            document.getElementById('guess-attempts').textContent = gameStates.guess.attemptsLeft;
+        }
+
+        // Memory Game
+        function startMemoryGame() {
+            if (!currentUser) {
+                showToast('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const gameState = gameStates.memory;
+            gameState.gameActive = true;
+            gameState.level = 1;
+            gameState.score = 0;
+            gameState.sequence = [];
+            gameState.playerSequence = [];
+            
+            updateMemoryDisplay();
+            nextMemorySequence();
+        }
+
+        function nextMemorySequence() {
+            const gameState = gameStates.memory;
+            const colors = ['red', 'blue', 'green', 'yellow'];
+            gameState.sequence.push(colors[Math.floor(Math.random() * colors.length)]);
+            gameState.playerSequence = [];
+            gameState.showingSequence = true;
+            
+            document.querySelectorAll('.memory-btn').forEach(btn => {
+                btn.style.pointerEvents = 'none';
+            });
+            
+            showMemorySequence();
+        }
+
+        function showMemorySequence() {
+            const gameState = gameStates.memory;
+            let index = 0;
+            
+            const showNext = () => {
+                if (index < gameState.sequence.length) {
+                    const color = gameState.sequence[index];
+                    const btn = document.querySelector(`[data-color="${color}"]`);
+                    
+                    btn.classList.add('active');
+                    setTimeout(() => {
+                        btn.classList.remove('active');
+                        index++;
+                        setTimeout(showNext, 300);
+                    }, 500);
+                } else {
+                    gameState.showingSequence = false;
+                    document.querySelectorAll('.memory-btn').forEach(btn => {
+                        btn.style.pointerEvents = 'auto';
+                    });
+                }
+            };
+            
+            setTimeout(showNext, 1000);
+        }
+
+        function handleMemoryClick(color) {
+            const gameState = gameStates.memory;
+            
+            if (gameState.showingSequence || !gameState.gameActive) return;
+            
+            gameState.playerSequence.push(color);
+            
+            // Check if current input is correct
+            const currentIndex = gameState.playerSequence.length - 1;
+            if (gameState.playerSequence[currentIndex] !== gameState.sequence[currentIndex]) {
+                showToast('Salah! Game Over', 'error');
+                endMemoryGame();
+                return;
+            }
+            
+            // Check if sequence is complete
+            if (gameState.playerSequence.length === gameState.sequence.length) {
+                gameState.score += 20;
+                gameState.level++;
+                updateMemoryDisplay();
+                updateUserPoints(20);
+                
+                setTimeout(() => {
+                    nextMemorySequence();
+                }, 1000);
+            }
+        }
+
+        function endMemoryGame() {
+            const gameState = gameStates.memory;
+            gameState.gameActive = false;
+            
+            document.querySelectorAll('.memory-btn').forEach(btn => {
+                btn.style.pointerEvents = 'none';
+            });
+            
+            document.getElementById('start-memory-game').textContent = 'Mulai Game';
+        }
+
+        function updateMemoryDisplay() {
+            document.getElementById('memory-level').textContent = gameStates.memory.level;
+            document.getElementById('memory-score').textContent = gameStates.memory.score;
+        }
+
+        // Withdraw Functions
+        async function submitWithdraw(event) {
+            event.preventDefault();
+            
+            if (!currentUser) {
+                showToast('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const amount = parseInt(document.getElementById('withdraw-amount').value);
+            const method = document.getElementById('withdraw-method').value;
+            const account = document.getElementById('withdraw-account').value;
+
+            if (amount < 1000) {
+                showToast('Minimum withdraw 1000 poin', 'error');
+                return;
+            }
+
+            if (amount > currentUser.points) {
+                showToast('Saldo tidak mencukupi', 'error');
+                return;
+            }
+
+            try {
+                showLoading();
+                const response = await apiCall('withdraw', {
+                    email: currentUser.email,
+                    userId: currentUser.userId,
+                    amount: amount,
+                    method: method,
+                    account: account
+                });
+
+                if (response.success) {
+                    currentUser.points -= amount;
+                    updateUserDisplay();
+                    showToast('Request withdraw berhasil dikirim!');
+                    document.getElementById('withdraw-form').reset();
+                    loadWithdrawHistory();
+                }
+            } catch (error) {
+                showToast('Gagal mengirim request withdraw', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadWithdrawHistory() {
+            if (!currentUser) return;
+
+            try {
+                const response = await apiCall('getWithdrawHistory', { email: currentUser.email });
+                
+                if (response.success) {
+                    const historyContainer = document.getElementById('withdraw-history');
+                    
+                    if (response.history.length === 0) {
+                        historyContainer.innerHTML = '<p>Belum ada request withdraw</p>';
+                    } else {
+                        historyContainer.innerHTML = response.history.map(item => `
+                            <div class="withdraw-item">
+                                <div class="withdraw-item-info">
+                                    <strong>${item.amount} poin</strong><br>
+                                    ${item.method.toUpperCase()}: ${item.account}<br>
+                                    <small>${new Date(item.date).toLocaleString()}</small>
+                                </div>
+                                <div class="withdraw-status ${item.status}">${item.status}</div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Load withdraw history error:', error);
+            }
+        }
+
+        // Leaderboard Functions
+        async function loadLeaderboard() {
+            try {
+                const response = await apiCall('getLeaderboard');
+                
+                if (response.success) {
+                    const leaderboardContainer = document.getElementById('leaderboard-list');
+                    
+                    if (response.leaderboard.length === 0) {
+                        leaderboardContainer.innerHTML = '<div class="loading">Belum ada data leaderboard</div>';
+                    } else {
+                        leaderboardContainer.innerHTML = response.leaderboard.map((user, index) => {
+                            const rank = index + 1;
+                            return `
+                                <div class="leaderboard-item">
+                                    <div class="leaderboard-rank rank-${rank}">${rank}</div>
+                                    <div class="leaderboard-info">
+                                        <div class="leaderboard-email">${user.email}</div>
+                                        <div class="leaderboard-id">${user.userId}</div>
+                                    </div>
+                                    <div class="leaderboard-points">${user.points} poin</div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Load leaderboard error:', error);
+                document.getElementById('leaderboard-list').innerHTML = '<div class="loading">Gagal memuat leaderboard</div>';
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigateToSection(link.dataset.section);
+                });
+            });
+
+            // Mobile menu toggle
+            document.getElementById('hamburger').addEventListener('click', function() {
+                this.classList.toggle('active');
+                document.getElementById('nav-menu').classList.toggle('active');
+            });
+
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                login(email);
+            });
+
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', logout);
+
+            // Game selection
+            document.querySelectorAll('.game-btn').forEach(btn => {
+                btn.addEventListener('click', () => selectGame(btn.dataset.game));
+            });
+
+            // Speed Click Game
+            document.getElementById('start-click-game').addEventListener('click', startClickGame);
+            document.getElementById('click-button').addEventListener('click', handleClick);
+
+            // Guess Number Game
+            document.getElementById('start-guess-game').addEventListener('click', startGuessGame);
+            document.getElementById('submit-guess').addEventListener('click', submitGuess);
+            document.getElementById('guess-number').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitGuess();
+                }
+            });
+
+            // Memory Game
+            document.getElementById('start-memory-game').addEventListener('click', startMemoryGame);
+            document.querySelectorAll('.memory-btn').forEach(btn => {
+                btn.addEventListener('click', () => handleMemoryClick(btn.dataset.color));
+            });
+
+            // Withdraw form
+            document.getElementById('withdraw-form').addEventListener('submit', submitWithdraw);
+
+            // Initialize first game
+            selectGame('click');
+        });
+    </script>
+</body>
+</html>
